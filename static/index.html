@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Server - 实时日志查看器</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部控制面板 -->
+        <header class="control-panel">
+            <div class="control-group">
+                <h1>📋 Log Server</h1>
+                <div class="connection-status" id="connectionStatus">
+                    <span class="status-dot"></span>
+                    <span class="status-text">连接中...</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <!-- 客户端选择 -->
+                <div class="control-item">
+                    <label for="clientSelect">客户端:</label>
+                    <select id="clientSelect">
+                        <option value="">所有客户端</option>
+                    </select>
+                </div>
+
+                <!-- 日志级别筛选 -->
+                <div class="control-item">
+                    <label>日志级别:</label>
+                    <div class="level-filters">
+                        <label><input type="checkbox" value="DEBUG" checked> DEBUG</label>
+                        <label><input type="checkbox" value="INFO" checked> INFO</label>
+                        <label><input type="checkbox" value="WARNING" checked> WARNING</label>
+                        <label><input type="checkbox" value="ERROR" checked> ERROR</label>
+                        <label><input type="checkbox" value="CRITICAL" checked> CRITICAL</label>
+                    </div>
+                </div>
+
+                <!-- 关键字搜索 -->
+                <div class="control-item">
+                    <label for="searchInput">关键字:</label>
+                    <input type="text" id="searchInput" placeholder="搜索日志内容...">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <!-- 自动滚动开关 -->
+                <div class="control-item">
+                    <label class="switch">
+                        <input type="checkbox" id="autoScroll" checked>
+                        <span class="slider"></span>
+                    </label>
+                    <span>自动滚动</span>
+                </div>
+
+                <!-- 清空按钮 -->
+                <button id="clearBtn" class="btn btn-secondary">清空日志</button>
+
+                <!-- 配置按钮 -->
+                <button id="configBtn" class="btn btn-secondary">⚙️ 配置</button>
+            </div>
+        </header>
+
+        <!-- 客户端信息面板 -->
+        <div class="client-info" id="clientInfo" style="display: none;">
+            <span id="currentClient">当前客户端: -</span>
+            <span id="logStats">日志统计: 总计 0 (DEBUG: 0, INFO: 0, WARNING: 0, ERROR: 0, CRITICAL: 0)</span>
+            <span id="filterStats">显示: 0/0</span>
+        </div>
+
+        <!-- 配置面板遮罩 -->
+        <div class="config-overlay" id="configOverlay"></div>
+
+        <!-- 配置面板 -->
+        <div class="config-panel" id="configPanel">
+            <div class="config-header">
+                <h3>⚙️ 系统配置</h3>
+                <button class="close-btn" id="closeConfigBtn">×</button>
+            </div>
+            <div class="config-content">
+                <div class="config-item">
+                    <label for="maxLogsInput">
+                        每个客户端最多保留的日志数量
+                        <span class="config-hint">(范围: 1000 - 100000)</span>
+                    </label>
+                    <input
+                        type="number"
+                        id="maxLogsInput"
+                        min="1000"
+                        max="100000"
+                        step="1000"
+                        placeholder="10000"
+                    >
+                    <span class="error-message" id="configError"></span>
+                </div>
+                <div class="config-actions">
+                    <button class="btn btn-primary" id="saveConfigBtn">保存配置</button>
+                    <button class="btn btn-secondary" id="resetConfigBtn">重置</button>
+                </div>
+                <div class="config-status" id="configStatus"></div>
+            </div>
+        </div>
+
+        <!-- 配置面板遮罩 -->
+        <div class="config-overlay" id="configOverlay"></div>
+
+        <!-- 日志显示区域 -->
+        <div class="log-container" id="logContainer">
+            <div class="log-empty">等待日志...</div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

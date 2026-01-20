@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简单测试</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        #log {
+            background: #252526;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 3px 0;
+        }
+        .success { color: #4ec9b0; }
+        .error { color: #f48771; }
+        .info { color: #3498db; }
+    </style>
+</head>
+<body>
+    <h1>Index.html 问题诊断</h1>
+    <div id="log"></div>
+
+    <script>
+        const logDiv = document.getElementById('log');
+
+        function log(msg, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            logDiv.appendChild(entry);
+            console.log(msg);
+        }
+
+        log('开始诊断...', 'info');
+
+        // 测试 1: 检查所有必需的DOM元素
+        log('\n测试 1: 检查DOM元素', 'info');
+        const requiredElements = [
+            'connectionStatus',
+            'clientSelect',
+            'autoScroll',
+            'clearBtn',
+            'configBtn',
+            'configPanel',
+            'closeConfigBtn',
+            'configOverlay',
+            'saveConfigBtn',
+            'resetConfigBtn',
+            'maxLogsInput',
+            'configError',
+            'configStatus',
+            'logContainer',
+            'searchInput'
+        ];
+
+        let missingElements = [];
+        requiredElements.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                log(`✓ 找到元素: ${id}`, 'success');
+            } else {
+                log(`✗ 缺失元素: ${id}`, 'error');
+                missingElements.push(id);
+            }
+        });
+
+        if (missingElements.length > 0) {
+            log(`\n缺失的元素: ${missingElements.join(', ')}`, 'error');
+        } else {
+            log('\n所有必需的元素都存在!', 'success');
+        }
+
+        // 测试 2: 尝试加载 app.js
+        log('\n测试 2: 加载 app.js', 'info');
+
+        const script = document.createElement('script');
+        script.src = '/static/app.js';
+
+        script.onload = () => {
+            log('✓ app.js 加载成功', 'success');
+
+            // 等待一下看是否初始化成功
+            setTimeout(() => {
+                if (window.logServer) {
+                    log('✓ LogServer 实例已创建', 'success');
+                    log(`  - ws 对象: ${window.logServer.ws ? '存在' : '不存在'}`, 'info');
+                    log(`  - ws readyState: ${window.logServer.ws ? window.logServer.ws.readyState : 'N/A'}`, 'info');
+                } else {
+                    log('✗ LogServer 实例未创建', 'error');
+                }
+
+                // 检查 WebSocket 状态
+                if (window.logServer && window.logServer.ws) {
+                    const ws = window.logServer.ws;
+                    const states = ['CONNECTING', 'OPEN', 'CLOSING', 'CLOSED'];
+                    log(`\nWebSocket 状态: ${states[ws.readyState] || ws.readyState}`, 'info');
+
+                    if (ws.readyState === 1) {
+                        log('✓ WebSocket 已连接', 'success');
+                    } else {
+                        log('✗ WebSocket 未连接', 'error');
+                    }
+                }
+            }, 1000);
+        };
+
+        script.onerror = () => {
+            log('✗ app.js 加载失败', 'error');
+        };
+
+        document.head.appendChild(script);
+
+        // 测试 3: 测试 WebSocket 连接
+        log('\n测试 3: 独立测试 WebSocket', 'info');
+
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}/ws`;
+        log(`连接到: ${wsUrl}`, 'info');
+
+        const testWs = new WebSocket(wsUrl);
+
+        testWs.onopen = () => {
+            log('✓ 测试 WebSocket 连接成功!', 'success');
+        };
+
+        testWs.onerror = (error) => {
+            log('✗ 测试 WebSocket 连接失败', 'error');
+        };
+
+        testWs.onmessage = (event) => {
+            log(`✓ 收到消息: ${event.data.substring(0, 50)}...`, 'success');
+        };
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket 调试</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        .log {
+            margin: 10px 0;
+            padding: 5px;
+            border-left: 3px solid #888;
+        }
+        .log.info { border-color: #3498db; }
+        .log.success { border-color: #27ae60; }
+        .log.error { border-color: #e74c3c; }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #007acc;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #status {
+            margin: 20px 0;
+            padding: 10px;
+            background: #252526;
+        }
+    </style>
+</head>
+<body>
+    <h1>WebSocket 连接调试</h1>
+
+    <div id="status">
+        <strong>状态:</strong> <span id="statusText">未连接</span>
+    </div>
+
+    <div>
+        <button onclick="testWebSocket()">测试 WebSocket 连接</button>
+        <button onclick="sendTestLog()">发送测试日志</button>
+        <button onclick="clearLogs()">清空日志</button>
+    </div>
+
+    <div id="logs"></div>
+
+    <script>
+        let ws = null;
+        let logCount = 0;
+
+        function addLog(message, type = 'info') {
+            const logsDiv = document.getElementById('logs');
+            const logDiv = document.createElement('div');
+            logDiv.className = `log ${type}`;
+            logDiv.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logsDiv.insertBefore(logDiv, logsDiv.firstChild);
+            logCount++;
+            if (logCount > 50) {
+                logsDiv.removeChild(logsDiv.lastChild);
+            }
+        }
+
+        function updateStatus(text, color) {
+            const statusText = document.getElementById('statusText');
+            statusText.textContent = text;
+            statusText.style.color = color || 'white';
+        }
+
+        function testWebSocket() {
+            addLog('开始 WebSocket 连接测试...', 'info');
+
+            // 构建WebSocket URL
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws`;
+            addLog(`WebSocket URL: ${wsUrl}`, 'info');
+
+            try {
+                ws = new WebSocket(wsUrl);
+
+                ws.onopen = () => {
+                    addLog('✓ WebSocket 连接成功!', 'success');
+                    updateStatus('已连接', '#4ec9b0');
+                };
+
+                ws.onmessage = (event) => {
+                    addLog(`✓ 收到消息: ${event.data.substring(0, 100)}...`, 'success');
+                };
+
+                ws.onerror = (error) => {
+                    addLog(`✗ WebSocket 错误: ${error}`, 'error');
+                    updateStatus('连接错误', '#f48771');
+                };
+
+                ws.onclose = (event) => {
+                    addLog(`✗ WebSocket 连接关闭 (code: ${event.code}, reason: ${event.reason || '无'})`, 'error');
+                    updateStatus('连接已关闭', '#f48771');
+                };
+
+            } catch (error) {
+                addLog(`✗ 创建 WebSocket 失败: ${error.message}`, 'error');
+                updateStatus('创建失败', '#f48771');
+            }
+        }
+
+        async function sendTestLog() {
+            addLog('发送测试日志到服务器...', 'info');
+
+            try {
+                const response = await fetch('/logs', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        client_id: "debug-client",
+                        logs: [{
+                            message: {
+                                timestamp: "2026-01-20 13:00:00.000",
+                                level: "INFO",
+                                message: "来自调试页面的测试日志，数字 98765",
+                                name: "debug",
+                                function: "test",
+                                line: 1
+                            },
+                            client_id: "debug-client",
+                            timestamp: "2026-01-20T13:00:00.000000",
+                            level: "INFO",
+                            logger: "debug",
+                            function: "test",
+                            line: 1
+                        }]
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    addLog(`✓ 日志发送成功: ${result.message}`, 'success');
+                } else {
+                    addLog(`✗ 日志发送失败: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                addLog(`✗ 发送失败: ${error.message}`, 'error');
+            }
+        }
+
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+            logCount = 0;
+        }
+
+        // 页面加载时的检查
+        window.addEventListener('load', () => {
+            addLog('页面加载完成', 'info');
+            addLog(`当前 URL: ${window.location.href}`, 'info');
+
+            // 检查API是否可用
+            fetch('/api/config')
+                .then(res => res.json())
+                .then(config => {
+                    addLog(`✓ API 可用，配置: max_logs=${config.max_logs_per_client}`, 'success');
+                })
+                .catch(err => {
+                    addLog(`✗ API 不可用: ${err.message}`, 'error');
+                });
+        });
+    </script>
+</body>
+</html>
