@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """测试新的消息格式"""
 
-import requests
 import json
+
+import requests
 
 # 服务器地址
 SERVER_URL = "http://localhost:8000"
@@ -20,7 +21,7 @@ new_format_message = {
             "logger": "drivers.tonghuashun",
             "function": "connect",
             "line": 150,
-            "extra": {"retry_count": 3}
+            "extra": {"retry_count": 3},
         },
         {
             "timestamp": "2026-01-20 12:00:01.111",
@@ -29,7 +30,7 @@ new_format_message = {
             "logger": "drivers.tonghuashun",
             "function": "connect",
             "line": 150,
-            "extra": {"port": 8080}
+            "extra": {"port": 8080},
         },
         {
             "timestamp": "2026-01-20 12:00:00.000",
@@ -38,9 +39,9 @@ new_format_message = {
             "logger": "system",
             "function": "init",
             "line": 42,
-            "extra": None
-        }
-    ]
+            "extra": None,
+        },
+    ],
 }
 
 print("=" * 60)
@@ -50,11 +51,7 @@ print("\n发送的消息:")
 print(json.dumps(new_format_message, indent=2, ensure_ascii=False))
 
 try:
-    response = requests.post(
-        f"{SERVER_URL}/logs",
-        json=new_format_message,
-        timeout=5
-    )
+    response = requests.post(f"{SERVER_URL}/logs", json=new_format_message, timeout=5)
 
     print(f"\n状态码: {response.status_code}")
 

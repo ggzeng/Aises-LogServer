@@ -6,6 +6,7 @@
 
 import pytest
 from fastapi.testclient import TestClient
+
 from main import app
 from services.log_manager import log_manager
 
@@ -39,18 +40,18 @@ class TestLogAPI:
                     "message": "测试日志消息，包含数字 12345",
                     "logger": "test.module",
                     "function": "test_func",
-                    "line": 42
+                    "line": 42,
                 }
-            ]
+            ],
         }
 
         response = client.post("/logs", json=log_data)
         assert response.status_code == 200
 
         result = response.json()
-        assert result['status'] == 'success'
-        assert result['client_id'] == 'test-client-1'
-        assert '已接收' in result['message']
+        assert result["status"] == "success"
+        assert result["client_id"] == "test-client-1"
+        assert "已接收" in result["message"]
 
     def test_receive_logs_multiple_entries(self, client):
         """测试接收多条日志"""
@@ -65,7 +66,7 @@ class TestLogAPI:
                     "message": "日志 1",
                     "logger": "test",
                     "function": "test",
-                    "line": 1
+                    "line": 1,
                 },
                 {
                     "timestamp": "2026-01-20 12:00:01.000",
@@ -73,21 +74,18 @@ class TestLogAPI:
                     "message": "日志 2",
                     "logger": "test",
                     "function": "test",
-                    "line": 2
-                }
-            ]
+                    "line": 2,
+                },
+            ],
         }
 
         response = client.post("/logs", json=log_data)
         assert response.status_code == 200
-        assert '2 条日志' in response.json()['message']
+        assert "2 条日志" in response.json()["message"]
 
     def test_receive_logs_invalid_json(self, client):
         """测试接收无效 JSON"""
-        response = client.post(
-            "/logs",
-            json={"invalid": "data"}
-        )
+        response = client.post("/logs", json={"invalid": "data"})
         assert response.status_code == 422  # Validation error
 
     def test_receive_logs_invalid_level(self, client):
@@ -102,9 +100,9 @@ class TestLogAPI:
                     "message": "测试",
                     "logger": "test",
                     "function": "test",
-                    "line": 1
+                    "line": 1,
                 }
-            ]
+            ],
         }
 
         response = client.post("/logs", json=log_data)
@@ -125,9 +123,9 @@ class TestLogAPI:
                         "message": f"{level} 日志",
                         "logger": "test",
                         "function": "test",
-                        "line": 1
+                        "line": 1,
                     }
-                ]
+                ],
             }
 
             response = client.post("/logs", json=log_data)
@@ -142,10 +140,10 @@ class TestLogAPI:
                 {
                     "timestamp": "2026-01-20 12:00:00.000",
                     "level": "INFO",
-                    "message": "测试"
+                    "message": "测试",
                     # 缺少 logger, function, line
                 }
-            ]
+            ],
         }
 
         response = client.post("/logs", json=log_data)
@@ -165,7 +163,7 @@ class TestLogManager:
             message="测试",
             logger="test",
             function="test",
-            line=1
+            line=1,
         )
 
         log_manager.add_logs("test-storage", [log_msg], "test-host")
@@ -186,7 +184,7 @@ class TestLogManager:
             message="Client 1",
             logger="test",
             function="test",
-            line=1
+            line=1,
         )
 
         msg2 = LogMessage(
@@ -195,7 +193,7 @@ class TestLogManager:
             message="Client 2",
             logger="test",
             function="test",
-            line=1
+            line=1,
         )
 
         log_manager.add_logs("client-1", [msg1])
@@ -214,10 +212,6 @@ class TestLogManager:
     def test_log_rotation(self):
         """测试日志轮转"""
         from models.log_models import LogMessage
-        from services.config_service import config_service
-
-        # 设置较小的日志上限用于测试
-        original_config = config_service.get_config()
 
         # 创建超过限制的日志
         messages = []
@@ -228,7 +222,7 @@ class TestLogManager:
                 message=f"Log {i}",
                 logger="test",
                 function="test",
-                line=i
+                line=i,
             )
             messages.append(msg)
 

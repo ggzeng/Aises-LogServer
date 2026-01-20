@@ -1,14 +1,12 @@
+import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-import uvicorn
 
-from routes import log_routes, config_routes
+from routes import config_routes, log_routes
 
 app = FastAPI(
-    title="Log Server",
-    description="接收 loguru 客户端日志并通过 web 实时展示",
-    version="0.1.0"
+    title="Log Server", description="接收 loguru 客户端日志并通过 web 实时展示", version="0.1.0"
 )
 
 # 配置 CORS 中间件
@@ -35,10 +33,4 @@ async def root():
 
 
 if __name__ == "__main__":
-    uvicorn.run(
-        "main:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True,
-        log_level="info"
-    )
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True, log_level="info")

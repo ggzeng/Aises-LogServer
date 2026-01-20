@@ -1,11 +1,13 @@
-import yaml
 from pathlib import Path
-from typing import Any, Dict
-from pydantic import BaseModel, Field, validator
+from typing import Any
+
+import yaml
+from pydantic import BaseModel, Field, field_validator
 
 
 class ServerConfig(BaseModel):
     """服务器配置"""
+
     host: str = "0.0.0.0"
     port: int = 8000
     reload: bool = True
@@ -13,20 +15,23 @@ class ServerConfig(BaseModel):
 
 class LoggingConfig(BaseModel):
     """日志配置"""
+
     level: str = "info"
 
 
 class AppConfig(BaseModel):
     """应用配置"""
+
     max_logs_per_client: int = Field(default=10000, ge=1000, le=100000)
     server: ServerConfig = Field(default_factory=ServerConfig)
     logging: LoggingConfig = Field(default_factory=LoggingConfig)
 
-    @validator('max_logs_per_client')
+    @field_validator("max_logs_per_client")
+    @classmethod
     def validate_max_logs(cls, v):
         """验证日志数量上限"""
         if not (1000 <= v <= 100000):
-            raise ValueError('max_logs_per_client 必须在 1000-100000 范围内')
+            raise ValueError("max_logs_per_client 必须在 1000-100000 范围内")
         return v
 
 
@@ -42,7 +47,7 @@ class ConfigService:
         """加载配置文件"""
         if self.config_path.exists():
             try:
-                with open(self.config_path, 'r', encoding='utf-8') as f:
+                with open(self.config_path, encoding="utf-8") as f:
                     data = yaml.safe_load(f)
                     if data:
                         self._config = AppConfig(**data)
@@ -56,12 +61,12 @@ class ConfigService:
     def _save_config(self) -> None:
         """保存配置到文件"""
         try:
-            with open(self.config_path, 'w', encoding='utf-8') as f:
+            with open(self.config_path, "w", encoding="utf-8") as f:
                 yaml.dump(
-                    self._config.dict(exclude_none=True),
+                    self._config.model_dump(exclude_none=True),
                     f,
                     default_flow_style=False,
-                    allow_unicode=True
+                    allow_unicode=True,
                 )
         except Exception as e:
             raise RuntimeError(f"保存配置文件失败: {e}")
@@ -70,10 +75,10 @@ class ConfigService:
         """获取当前配置"""
         return self._config
 
-    def update_config(self, updates: Dict[str, Any]) -> AppConfig:
+    def update_config(self, updates: dict[str, Any]) -> AppConfig:
         """更新配置"""
         # 获取当前配置字典
-        current = self._config.dict()
+        current = self._config.model_dump()
 
         # 递归更新配置
         def update_dict(d: dict, u: dict) -> dict:

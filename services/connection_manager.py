@@ -1,6 +1,4 @@
 from fastapi import WebSocket
-from typing import List, Set
-import json
 
 
 class ConnectionManager:
@@ -8,7 +6,7 @@ class ConnectionManager:
 
     def __init__(self):
         # 存储所有活动的 WebSocket 连接
-        self.active_connections: List[WebSocket] = []
+        self.active_connections: list[WebSocket] = []
 
     async def connect(self, websocket: WebSocket) -> None:
         """接受新的 WebSocket 连接"""

@@ -28,7 +28,64 @@
 
 ## 快速开始
 
-### 1. 安装依赖
+### 方式一：使用 Makefile (推荐)
+
+项目提供了 Makefile 来简化常用操作：
+
+#### 安装与启动
+
+```bash
+# 查看所有可用命令
+make help
+
+# 安装项目依赖
+make install
+
+# 启动开发服务器（支持热重载）
+make dev
+
+# 启动生产服务器
+make run
+```
+
+#### 测试与代码质量
+
+```bash
+# 运行所有测试
+make test
+
+# 运行测试并生成覆盖率报告
+make test-cov
+
+# 格式化代码
+make format
+
+# 运行代码检查
+make lint
+
+# 运行所有检查（代码检查 + 测试 + 覆盖率）
+make check
+```
+
+#### 其他常用命令
+
+```bash
+# 查看项目信息
+make info
+
+# 查看依赖列表
+make deps
+
+# 清理临时文件
+make clean
+
+# 深度清理（包括虚拟环境）
+make clean-all
+```
+
+### 方式二：手动操作
+
+#### 1. 安装依赖
 
 ```bash
 # 使用 uv (推荐)
@@ -38,7 +95,7 @@ uv sync
 pip install fastapi uvicorn[standard] loguru pydantic websockets pyyaml
 ```
 
-### 2. 启动服务器
+#### 2. 启动服务器
 
 ```bash
 # 方式 1: 直接运行
@@ -48,14 +105,14 @@ python main.py
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### 3. 访问 Web 界面
+#### 3. 访问 Web 界面
 
 打开浏览器访问:
 ```
 http://localhost:8000/static/index.html
 ```
 
-### 4. 发送日志
+#### 4. 发送日志
 
 使用 curl 测试:
 ```bash
@@ -129,6 +186,7 @@ curl -X POST http://localhost:8000/logs \
 ```
 log-server/
 ├── main.py                   # FastAPI 应用入口
+├── Makefile                  # 项目管理命令
 ├── config.yaml               # 配置文件
 ├── models/                   # Pydantic 数据模型
 │   └── log_models.py
@@ -139,6 +197,9 @@ log-server/
 │   ├── config_service.py    # 配置管理
 │   ├── log_manager.py       # 日志管理
 │   └── connection_manager.py # WebSocket 管理
+├── tests/                    # 测试文件
+│   ├── test_log_api.py      # 日志 API 测试
+│   └── test_config_api.py   # 配置 API 测试
 └── static/                   # 前端静态文件
     ├── index.html           # 主页面
     ├── style.css            # 样式表
@@ -153,6 +214,9 @@ log-server/
 - **日志**: Loguru
 - **配置**: YAML (pyyaml)
 - **前端**: 原生 HTML/CSS/JavaScript
+- **包管理**: uv
+- **构建工具**: Make
+- **测试**: pytest / pytest-cov
 
 ## 性能
 

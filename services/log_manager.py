@@ -1,8 +1,6 @@
-from typing import Dict, List, Deque
 from collections import deque
-from datetime import datetime
 
-from models.log_models import StoredLog, LogMessage
+from models.log_models import LogMessage, StoredLog
 from services.config_service import config_service
 
 
@@ -11,9 +9,9 @@ class LogManager:
 
     def __init__(self):
         # 按客户端 ID 分组的日志存储
-        self._logs: Dict[str, Deque[StoredLog]] = {}
+        self._logs: dict[str, deque[StoredLog]] = {}
 
-    def add_logs(self, client_id: str, messages: List[LogMessage], hostname: str = None) -> None:
+    def add_logs(self, client_id: str, messages: list[LogMessage], hostname: str = None) -> None:
         """添加日志批次"""
         if client_id not in self._logs:
             self._logs[client_id] = deque()
@@ -31,7 +29,7 @@ class LogManager:
                 line=msg.line,
                 client_id=client_id,
                 hostname=hostname,
-                extra=msg.extra
+                extra=msg.extra,
             )
             client_logs.append(stored_log)
 
@@ -42,17 +40,17 @@ class LogManager:
         while len(client_logs) > max_logs:
             client_logs.popleft()
 
-    def get_logs(self, client_id: str) -> List[StoredLog]:
+    def get_logs(self, client_id: str) -> list[StoredLog]:
         """获取指定客户端的所有日志"""
         if client_id not in self._logs:
             return []
         return list(self._logs[client_id])
 
-    def get_all_clients(self) -> List[str]:
+    def get_all_clients(self) -> list[str]:
         """获取所有客户端 ID"""
         return list(self._logs.keys())
 
-    def get_client_stats(self, client_id: str) -> Dict[str, int]:
+    def get_client_stats(self, client_id: str) -> dict[str, int]:
         """获取客户端日志统计信息"""
         if client_id not in self._logs:
             return {"total": 0, "DEBUG": 0, "INFO": 0, "WARNING": 0, "ERROR": 0, "CRITICAL": 0}

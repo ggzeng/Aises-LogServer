@@ -1,6 +1,5 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
-from typing import Optional
 
 from services.config_service import config_service
 
@@ -9,6 +8,7 @@ router = APIRouter()
 
 class ConfigResponse(BaseModel):
     """配置响应"""
+
     max_logs_per_client: int
     server_host: str
     server_port: int
@@ -18,7 +18,10 @@ class ConfigResponse(BaseModel):
 
 class ConfigUpdateRequest(BaseModel):
     """配置更新请求"""
-    max_logs_per_client: Optional[int] = Field(None, ge=1000, le=100000, description="每个客户端最多保留的日志数量")
+
+    max_logs_per_client: int | None = Field(
+        None, ge=1000, le=100000, description="每个客户端最多保留的日志数量"
+    )
 
 
 @router.get("/config", response_model=ConfigResponse)
@@ -30,7 +33,7 @@ async def get_config():
         server_host=config.server.host,
         server_port=config.server.port,
         server_reload=config.server.reload,
-        logging_level=config.logging.level
+        logging_level=config.logging.level,
     )
 
 
@@ -54,7 +57,7 @@ async def update_config(request: ConfigUpdateRequest):
             server_host=updated_config.server.host,
             server_port=updated_config.server.port,
             server_reload=updated_config.server.reload,
-            logging_level=updated_config.logging.level
+            logging_level=updated_config.logging.level,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

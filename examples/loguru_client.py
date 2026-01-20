@@ -6,12 +6,13 @@ Loguru 客户端示例 - 将日志发送到 Log Server
     python loguru_client.py my-app-instance-1  # 指定 client_id
 """
 
-import sys
 import socket
+import sys
+import time
+from datetime import datetime
+
 import requests
 from loguru import logger
-from datetime import datetime
-import time
 
 # ============ 配置 ============
 LOG_SERVER_URL = "http://localhost:8000/logs"
@@ -36,15 +37,17 @@ def send_log_to_server(message):
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3],
         "messages": [
             {
-                "timestamp": datetime.fromtimestamp(log_entry["time"].timestamp()).strftime("%Y-%m-%d %H:%M:%S.%f")[:-3],
+                "timestamp": datetime.fromtimestamp(log_entry["time"].timestamp()).strftime(
+                    "%Y-%m-%d %H:%M:%S.%f"
+                )[:-3],
                 "level": log_entry["level"].name,
                 "message": log_entry["message"],
                 "logger": log_entry["name"],
                 "function": log_entry["function"],
                 "line": log_entry["line"],
-                "extra": log_entry.get("extra")
+                "extra": log_entry.get("extra"),
             }
-        ]
+        ],
     }
 
     try:
@@ -56,7 +59,7 @@ def send_log_to_server(message):
     except requests.exceptions.Timeout:
         # 超时不影响主程序
         pass
-    except Exception as e:
+    except Exception:
         # 静默处理错误，避免日志发送失败影响主程序
         pass
 
@@ -71,14 +74,14 @@ def setup_logger():
     logger.add(
         sys.stderr,
         format="<green>{time:HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | <level>{message}</level>",
-        level="DEBUG"
+        level="DEBUG",
     )
 
     # 2. 添加日志服务器处理器
     logger.add(
         send_log_to_server,
         format="{message}",  # 消息格式在 send_log_to_server 中构建
-        level="DEBUG"        # 发送所有级别的日志
+        level="DEBUG",  # 发送所有级别的日志
     )
 
     logger.info(f"日志客户端已启动 (CLIENT_ID: {CLIENT_ID})")
@@ -99,13 +102,13 @@ def demo_loop():
     logger.info("开始处理任务队列...")
 
     for i in range(10):
-        logger.info(f"正在处理任务 {i+1}/10")
+        logger.info(f"正在处理任务 {i + 1}/10")
         time.sleep(0.5)
 
         if i == 5:
             logger.warning("任务处理速度较慢，已耗时 2.5 秒")
         elif i == 8:
-            logger.error(f"任务 {i+1} 处理失败，错误代码 500")
+            logger.error(f"任务 {i + 1} 处理失败，错误代码 500")
 
     logger.success("所有任务完成！成功处理 8 个任务，失败 2 个")
 
@@ -116,7 +119,7 @@ def demo_structured_data():
         "user_id": 12345,
         "username": "test_user",
         "action": "login",
-        "ip": "192.168.1.100"
+        "ip": "192.168.1.100",
     }
 
     logger.info(f"用户登录: {user_data}")
@@ -128,9 +131,9 @@ if __name__ == "__main__":
     setup_logger()
 
     # 运行演示
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Loguru 客户端演示")
-    print("="*60 + "\n")
+    print("=" * 60 + "\n")
 
     logger.info("=== 开始演示 ===")
 
@@ -153,6 +156,6 @@ if __name__ == "__main__":
     logger.info("=== 演示结束 ===")
     logger.success(f"客户端 {CLIENT_ID} 演示完成")
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("提示: 打开浏览器访问 http://localhost:8000/static/index.html 查看实时日志")
-    print("="*60 + "\n")
+    print("=" * 60 + "\n")

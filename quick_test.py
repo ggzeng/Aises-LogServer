@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-import requests
 import json
+
+import requests
 
 url = "http://localhost:8000/logs"
 data = {
@@ -14,9 +15,9 @@ data = {
             "message": "这是一条测试日志，包含数字 12345",
             "logger": "my.module",
             "function": "my_function",
-            "line": 42
+            "line": 42,
         }
-    ]
+    ],
 }
 
 print("发送测试日志...")

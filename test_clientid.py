@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """测试 clientId 字段名（驼峰命名）"""
 
-import requests
 import json
+
+import requests
 
 SERVER_URL = "http://localhost:8000"
 
@@ -18,7 +19,7 @@ test_message = {
             "message": "测试驼峰命名 clientId 字段",
             "logger": "test",
             "function": "main",
-            "line": 10
+            "line": 10,
         },
         {
             "timestamp": "2026-01-20 16:00:01.000",
@@ -26,9 +27,9 @@ test_message = {
             "message": "警告信息，包含数字 12345",
             "logger": "test",
             "function": "check",
-            "line": 25
-        }
-    ]
+            "line": 25,
+        },
+    ],
 }
 
 print("=" * 60)
@@ -38,20 +39,16 @@ print("\n发送的消息:")
 print(json.dumps(test_message, indent=2, ensure_ascii=False))
 
 try:
-    response = requests.post(
-        f"{SERVER_URL}/logs",
-        json=test_message,
-        timeout=5
-    )
+    response = requests.post(f"{SERVER_URL}/logs", json=test_message, timeout=5)
 
     print(f"\n状态码: {response.status_code}")
 
     if response.status_code == 200:
         result = response.json()
-        print(f"✓ 成功！")
+        print("✓ 成功！")
         print(f"  - 已接收 {len(test_message['messages'])} 条日志")
         print(f"  - 客户端 ID: {result['client_id']}")
-        print(f"\n响应内容:")
+        print("\n响应内容:")
         print(json.dumps(result, indent=2, ensure_ascii=False))
     else:
         print(f"✗ 失败: {response.status_code}")

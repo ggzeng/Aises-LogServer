@@ -2,9 +2,11 @@
 """测试客户端列表功能"""
 
 import asyncio
-import websockets
 import json
+
 import httpx
+import websockets
+
 
 async def test_clients_list():
     """测试客户端列表获取"""
@@ -20,23 +22,25 @@ async def test_clients_list():
             "http://localhost:8000/logs",
             json={
                 "client_id": "test-client-123",
-                "logs": [{
-                    "message": {
-                        "timestamp": "2026-01-20 14:00:00.000",
+                "logs": [
+                    {
+                        "message": {
+                            "timestamp": "2026-01-20 14:00:00.000",
+                            "level": "INFO",
+                            "message": "测试日志",
+                            "name": "test",
+                            "function": "test",
+                            "line": 1,
+                        },
+                        "client_id": "test-client-123",
+                        "timestamp": "2026-01-20T14:00:00.000000",
                         "level": "INFO",
-                        "message": "测试日志",
-                        "name": "test",
+                        "logger": "test",
                         "function": "test",
-                        "line": 1
-                    },
-                    "client_id": "test-client-123",
-                    "timestamp": "2026-01-20T14:00:00.000000",
-                    "level": "INFO",
-                    "logger": "test",
-                    "function": "test",
-                    "line": 1
-                }]
-            }
+                        "line": 1,
+                    }
+                ],
+            },
         )
         print(f"   响应: {response.json()}")
 
@@ -65,11 +69,12 @@ async def test_clients_list():
             if len(clients) > 0:
                 print(f"   ✓ 找到 {len(clients)} 个客户端")
             else:
-                print(f"   ✗ 客户端列表为空")
+                print("   ✗ 客户端列表为空")
         else:
-            print(f"   ✗ 未收到 clients_list 消息")
+            print("   ✗ 未收到 clients_list 消息")
 
     print("\n" + "=" * 60)
+
 
 if __name__ == "__main__":
     asyncio.run(test_clients_list())

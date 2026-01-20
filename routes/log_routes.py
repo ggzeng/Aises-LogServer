@@ -1,15 +1,14 @@
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException
-from typing import Dict
+from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
 
 from models.log_models import LogBatch
-from services.log_manager import log_manager
 from services.connection_manager import connection_manager
+from services.log_manager import log_manager
 
 router = APIRouter()
 
 
 @router.post("/logs")
-async def receive_logs(batch: LogBatch) -> Dict[str, str]:
+async def receive_logs(batch: LogBatch) -> dict[str, str]:
     """
     接收 loguru 客户端发送的日志批次
 
@@ -28,27 +27,23 @@ async def receive_logs(batch: LogBatch) -> Dict[str, str]:
             # 构建完整的日志对象，包含客户端信息
             log_data = {
                 "timestamp": msg.timestamp,
-                "level": msg.level.value if hasattr(msg.level, 'value') else msg.level,
+                "level": msg.level.value if hasattr(msg.level, "value") else msg.level,
                 "message": msg.message,
                 "logger": msg.logger,
                 "function": msg.function,
                 "line": msg.line,
                 "client_id": batch.clientId,
                 "hostname": batch.hostname,
-                "extra": msg.extra
+                "extra": msg.extra,
             }
 
-            message = {
-                "type": "log",
-                "data": log_data,
-                "client_id": batch.clientId
-            }
+            message = {"type": "log", "data": log_data, "client_id": batch.clientId}
             await connection_manager.broadcast(message)
 
         return {
             "status": "success",
             "message": f"已接收 {len(batch.messages)} 条日志",
-            "client_id": batch.clientId
+            "client_id": batch.clientId,
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"处理日志失败: {str(e)}")
@@ -63,11 +58,13 @@ async def websocket_endpoint(websocket: WebSocket):
 
     try:
         # 发送连接成功消息
-        await websocket.send_json({
-            "type": "connected",
-            "message": "已连接到日志服务器",
-            "connection_count": connection_manager.get_connection_count()
-        })
+        await websocket.send_json(
+            {
+                "type": "connected",
+                "message": "已连接到日志服务器",
+                "connection_count": connection_manager.get_connection_count(),
+            }
+        )
 
         # 持续接收客户端消息（保持连接）
         while True:
@@ -76,35 +73,33 @@ async def websocket_endpoint(websocket: WebSocket):
             # 处理客户端请求
             if data:
                 import json
+
                 try:
                     request = json.loads(data)
 
                     # 处理获取客户端列表请求
                     if request.get("type") == "get_clients":
                         clients = log_manager.get_all_clients()
-                        await websocket.send_json({
-                            "type": "clients_list",
-                            "clients": clients
-                        })
+                        await websocket.send_json({"type": "clients_list", "clients": clients})
 
                     # 处理获取特定客户端日志请求
                     elif request.get("type") == "get_logs":
                         client_id = request.get("client_id")
                         if client_id:
                             logs = log_manager.get_logs(client_id)
-                            await websocket.send_json({
-                                "type": "logs_data",
-                                "client_id": client_id,
-                                "logs": [log.model_dump() for log in logs]
-                            })
+                            await websocket.send_json(
+                                {
+                                    "type": "logs_data",
+                                    "client_id": client_id,
+                                    "logs": [log.model_dump() for log in logs],
+                                }
+                            )
 
                             # 发送统计信息
                             stats = log_manager.get_client_stats(client_id)
-                            await websocket.send_json({
-                                "type": "client_stats",
-                                "client_id": client_id,
-                                "stats": stats
-                            })
+                            await websocket.send_json(
+                                {"type": "client_stats", "client_id": client_id, "stats": stats}
+                            )
 
                 except json.JSONDecodeError:
                     pass  # 忽略无效的 JSON
