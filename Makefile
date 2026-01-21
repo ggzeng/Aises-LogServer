@@ -44,13 +44,13 @@ run: ## 启动服务器（生产模式）
 	@echo "$(COLOR_GREEN)启动服务器在 http://$(HOST):$(PORT)$(COLOR_RESET)"
 	uvicorn main:app --host $(HOST) --port $(PORT)
 
-dev: ## 启动服务器（开发模式，支持热重载）
+dev: ## 启动服务器（开发模式，支持热重载，应用 debug 日志）
 	@echo "$(COLOR_GREEN)启动开发服务器在 http://$(HOST):$(PORT)$(COLOR_RESET)"
-	uvicorn main:app --host $(HOST) --port $(PORT) --reload
+	LOG_LEVEL=debug uvicorn main:app --host $(HOST) --port $(PORT) --reload --log-level info
 
-dev-host: ## 启动开发服务器（仅监听 localhost）
+dev-host: ## 启动开发服务器（仅监听 localhost，应用 debug 日志）
 	@echo "$(COLOR_GREEN)启动开发服务器在 http://localhost:$(PORT)$(COLOR_RESET)"
-	uvicorn main:app --host localhost --port $(PORT) --reload
+	LOG_LEVEL=debug uvicorn main:app --host localhost --port $(PORT) --reload --log-level info
 
 ##@ 测试
 
@@ -149,6 +149,14 @@ example-client: ## 运行示例客户端
 	else \
 		echo "$(COLOR_YELLOW)未找到示例客户端文件$(COLOR_RESET)"; \
 	fi
+
+test-api: ## 测试日志 API（可以指定 URL: make test-api URL=http://192.168.3.194:8000）
+	@echo "$(COLOR_GREEN)测试日志 API...$(COLOR_RESET)"
+	@uv run python scripts/test_log_api.py $(URL)
+
+diagnose: ## 诊断 API 连接问题（可以指定 URL: make diagnose URL=http://192.168.3.194:8000）
+	@echo "$(COLOR_GREEN)诊断 API 连接...$(COLOR_RESET)"
+	@uv run python scripts/diagnose_request.py $(URL)
 
 ##@ 信息
 

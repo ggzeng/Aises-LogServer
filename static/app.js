@@ -14,6 +14,7 @@ class LogServer {
             levels: ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
             keyword: ''
         };
+        this.logCounter = 0; // 用于生成唯一日志ID的计数器
 
         this.init();
     }
@@ -100,7 +101,11 @@ class LogServer {
                 break;
 
             case 'logs_data':
-                this.logs = data.logs;
+                // 为历史日志生成唯一ID
+                this.logs = data.logs.map(log => ({
+                    ...log,
+                    _id: ++this.logCounter
+                }));
                 this.renderLogs();
                 break;
 
@@ -120,7 +125,10 @@ class LogServer {
             return;
         }
 
-        this.logs.push({ ...log, client_id: clientId });
+        // 为每条日志生成唯一ID（使用递增计数器）
+        const logId = ++this.logCounter;
+
+        this.logs.push({ ...log, client_id: clientId, _id: logId });
         this.renderLogs();
 
         // 如果是新客户端，更新客户端列表
