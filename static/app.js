@@ -101,8 +101,8 @@ class LogServer {
                 break;
 
             case 'logs_data':
-                // 为历史日志生成唯一ID
-                this.logs = data.logs.map(log => ({
+                // 为历史日志生成唯一ID（反转顺序，让最新的在前面）
+                this.logs = data.logs.reverse().map(log => ({
                     ...log,
                     _id: ++this.logCounter
                 }));
@@ -128,7 +128,8 @@ class LogServer {
         // 为每条日志生成唯一ID（使用递增计数器）
         const logId = ++this.logCounter;
 
-        this.logs.push({ ...log, client_id: clientId, _id: logId });
+        // 将新日志添加到数组开头，让最新的日志在最上面
+        this.logs.unshift({ ...log, client_id: clientId, _id: logId });
         this.renderLogs();
 
         // 如果是新客户端，更新客户端列表
@@ -137,9 +138,9 @@ class LogServer {
             this.updateClientsListUI();
         }
 
-        // 自动滚动
+        // 自动滚动到顶部
         if (this.autoScroll) {
-            this.scrollToBottom();
+            this.scrollToTop();
         }
     }
 
@@ -320,7 +321,13 @@ class LogServer {
         }
     }
 
-    // 滚动到底部
+    // 滚动到顶部
+    scrollToTop() {
+        const container = document.getElementById('logContainer');
+        container.scrollTop = 0;
+    }
+
+    // 滚动到底部（保留方法用于其他可能的需求）
     scrollToBottom() {
         const container = document.getElementById('logContainer');
         container.scrollTop = container.scrollHeight;
