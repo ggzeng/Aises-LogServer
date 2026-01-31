@@ -48,6 +48,30 @@ make dev
 make run
 ```
 
+#### 后台运行
+
+生产环境建议使用后台运行模式：
+
+```bash
+# 后台启动服务器（日志保存到 logs/ 目录）
+make start
+
+# 查看实时日志
+make logs
+
+# 停止后台服务器
+make stop
+
+# 重启服务器
+make restart
+```
+
+**日志说明**：
+- 日志文件保存在 `logs/` 目录下
+- 文件命名格式：`server-YYYYMMDD-HHMMSS.log`
+- 使用 `make logs` 可以实时查看最新日志
+- `logs/` 目录已被 git 排除，不会被提交到版本控制
+
 #### 测试与代码质量
 
 ```bash
@@ -83,7 +107,37 @@ make clean
 make clean-all
 ```
 
-### 方式二：手动操作
+### 方式二：使用独立脚本
+
+项目提供了 `server.sh` 脚本，功能与 Makefile 的后台运行命令一致：
+
+```bash
+# 查看帮助信息
+./server.sh help
+
+# 后台启动服务器
+./server.sh start
+
+# 查看服务器运行状态
+./server.sh status
+
+# 查看实时日志
+./server.sh logs
+
+# 停止服务器
+./server.sh stop
+
+# 重启服务器
+./server.sh restart
+```
+
+**自定义配置**：
+```bash
+# 指定监听地址和端口
+HOST=127.0.0.1 PORT=9000 ./server.sh start
+```
+
+### 方式三：手动操作
 
 #### 1. 安装依赖
 

@@ -1,4 +1,4 @@
-.PHONY: help install dev-install run dev test test-cov lint format clean check all
+.PHONY: help install dev-install run dev start stop restart logs test test-cov lint format clean check all
 
 # 默认目标
 .DEFAULT_GOAL := help
@@ -51,6 +51,28 @@ dev: ## 启动服务器（开发模式，支持热重载，应用 debug 日志�
 dev-host: ## 启动开发服务器（仅监听 localhost，应用 debug 日志）
 	@echo "$(COLOR_GREEN)启动开发服务器在 http://localhost:$(PORT)$(COLOR_RESET)"
 	LOG_LEVEL=debug uvicorn main:app --host localhost --port $(PORT) --reload --log-level info
+
+start: ## 后台启动服务器（日志保存到 logs/ 目录）
+	@echo "$(COLOR_GREEN)后台启动服务器...$(COLOR_RESET)"
+	@mkdir -p logs
+	@nohup uvicorn main:app --host $(HOST) --port $(PORT) > logs/server-$(shell date +%Y%m%d-%H%M%S).log 2>&1 &
+	@echo "$(COLOR_GREEN)服务器已在后台启动，PID: $$!$(COLOR_RESET)"
+	@echo "$(COLOR_YELLOW)使用 'make stop' 停止服务器$(COLOR_RESET)"
+	@echo "$(COLOR_YELLOW)使用 'make logs' 查看日志$(COLOR_RESET)"
+
+stop: ## 停止后台运行的服务器
+	@echo "$(COLOR_YELLOW)停止服务器...$(COLOR_RESET)"
+	@pkill -f "uvicorn main:app" || echo "$(COLOR_YELLOW)未找到运行中的服务器$(COLOR_RESET)"
+	@echo "$(COLOR_GREEN)服务器已停止$(COLOR_RESET)"
+
+restart: stop start ## 重启服务器
+
+logs: ## 查看最新的日志文件
+	@echo "$(COLOR_GREEN)最新日志文件:$(COLOR_RESET)"
+	@ls -lt logs/*.log 2>/dev/null | head -1 || echo "$(COLOR_YELLOW)未找到日志文件$(COLOR_RESET)"
+	@echo ''
+	@echo "$(COLOR_GREEN)日志内容:$(COLOR_RESET)"
+	@tail -f $$(ls -t logs/*.log 2>/dev/null | head -1) 2>/dev/null || echo "$(COLOR_YELLOW)未找到日志文件$(COLOR_RESET)"
 
 ##@ 测试
 

@@ -10,6 +10,9 @@ wheels/
 # Virtual environments
 .venv
 
+# Logs directory
+logs/
+
 .git/
 .idea/
 .DS_Store
